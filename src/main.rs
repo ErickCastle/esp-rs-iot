@@ -1,14 +1,20 @@
+use dotenv_codegen::dotenv;
 use esp_idf_hal::{
     delay,
     i2c::{config::Config, I2cDriver},
     peripherals::Peripherals,
     units::Hertz,
 };
+use esp_idf_svc::{eventloop::EspSystemEventLoop, nvs::EspDefaultNvsPartition};
 use esp_idf_sys as _; // If using the `binstart` feature of `esp-idf-sys`, always keep this module imported
 use log::*;
 
+pub mod wifi;
+
 pub mod icm42670p;
 use icm42670p::{DeviceAddr, ICM42670P};
+
+use crate::wifi::wifi;
 
 fn main() {
     // It is necessary to call this function once. Otherwise some patches to the runtime
@@ -18,8 +24,15 @@ fn main() {
     esp_idf_svc::log::EspLogger::initialize_default();
 
     info!("Hello, world!");
+
     // Take control of the peripherals available in the ESP32-C3.
     let peripherals = Peripherals::take().unwrap();
+
+    // Take ownership of the System Event loop.
+    let sysloop = EspSystemEventLoop::take().unwrap();
+
+    // Take ownership of the Non-Volatile Storage.
+    let nvs = EspDefaultNvsPartition::take().unwrap();
 
     // Take ownership of the I2C0 module and configure it.
     let i2c = I2cDriver::new(
@@ -35,6 +48,15 @@ fn main() {
 
     // Set IMU's accelerometer state from Idle to Low-Noise mode.
     imu.set_accel_in_low_noise_mode().unwrap();
+
+    // Create WiFi instance.
+    let _wifi = wifi(
+        dotenv!("WIFI_SSID"),
+        dotenv!("WIFI_PASS"),
+        peripherals.modem,
+        sysloop,
+        nvs,
+    );
 
     loop {
         let accel_x = imu.read_accel_x().unwrap();

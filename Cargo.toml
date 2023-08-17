@@ -50,6 +50,7 @@ esp-idf-hal = { version = "0.41", optional = true, default-features = false }
 esp-idf-svc = { version = "0.46", optional = true, default-features = false }
 embedded-svc = { version = "0.25", optional = true, default-features = false }
 embedded-hal = { version = "0.2.7", default-features = false }
+dotenv_codegen = "0.15.0"
 
 [build-dependencies]
 embuild = "0.31.2"
