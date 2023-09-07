@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP-RS IoT</title>
+</head>
+
+<body>
+    <p id="server-response">Connecting...</p>
+</body>
+
+<script>
+    const serverResponse = document.getElementById("server-response");
+
+    // Create WebSocket conneciton.
+    const ws = new WebSocket("ws://10.0.0.32/ws/imu");
+
+    // Connection opened.
+    ws.addEventListener("open", (event) => {
+        console.log("Connected to ESP-RS WebSocket server.");
+    });
+
+    // Listen for messages.
+    ws.addEventListener("message", (event) => {
+        console.log("Message from server: ", event.data);
+        serverResponse.innerText = event.data;
+    });
+
+    // Periodically request IMU data.
+    const interval = setInterval(() => {
+        ws.send("GET IMU");
+    }, 1000);
+</script>
+
+</html>
